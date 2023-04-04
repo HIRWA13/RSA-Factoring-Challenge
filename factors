@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# RSA Challenge
+
+factorizer() {
+    local factor_1=$1 factor_2=$2
+    shift 2
+    local product=$(IFS=*; echo "$*")
+
+    ((factor_1 < factor_2)) && { local temp=$factor_1; factor_1=$factor_2; factor_2=$temp; }
+
+    echo "${product/:/=}$factor_1*$factor_2"
+}
+
+if [ $# -ne 1 ]; then
+    echo 'Usage: rsa <file>'
+    exit 1
+fi
+
+while read -r i; do
+    factorizer $(factor "$i")
+done < "$1"
