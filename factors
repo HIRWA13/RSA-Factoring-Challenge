@@ -2,20 +2,36 @@
 # RSA Challenge
 
 factorizer() {
-    local factor_1=$1 factor_2=$2
-    shift 2
-    local product=$(IFS=*; echo "$*")
+    if [ $# -ne 3 ]; then
+        args=("$@")
+        factor_1=${args[1]}
+        factor_2=1
 
-    ((factor_1 < factor_2)) && { local temp=$factor_1; factor_1=$factor_2; factor_2=$temp; }
+        for (( i=2; i<${#args[@]}; i++ )); do
+            factor_2=$((factor_2 * args[i]))
+        done
+    else
+        factor_1="$2"
+        factor_2="$3"
+    fi
 
-    echo "${product/:/=}$factor_1*$factor_2"
+    num=${1/:/=}
+
+    if [ "$factor_2" -gt "$factor_1" ]; then
+        factor_cp="$factor_1"
+        factor_1="$factor_2"
+        factor_2="$factor_cp"
+    fi
+
+    echo "$num$factor_1*$factor_2"
 }
 
 if [ $# -ne 1 ]; then
     echo 'Usage: rsa <file>'
     exit 1
+else
+    while read -r i; do
+        result=$(factor "$i")
+        factorizer $result
+    done < "$1"
 fi
-
-while read -r i; do
-    factorizer $(factor "$i")
-done < "$1"
